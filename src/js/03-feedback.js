@@ -51,6 +51,8 @@ function updateFormFields(event) {
   if (savedState) {
     refs.emailInput.value = savedState.email;
     refs.messageInput.value = savedState.message;
+    formState.email = savedState.email; 
+    formState.message = savedState.message; 
   }
 }
 
