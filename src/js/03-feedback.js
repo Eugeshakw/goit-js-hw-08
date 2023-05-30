@@ -1,69 +1,73 @@
-const save = (key, value) => {
-  try {
-    const serializedState = JSON.stringify(value);
-    localStorage.setItem(key, serializedState);
-  } catch (error) {
-    console.error('Set state error: ', error.message);
-  }
-};
-
-const load = key => {
-  try {
-    const serializedState = localStorage.getItem(key);
-    return serializedState === null ? undefined : JSON.parse(serializedState);
-  } catch (error) {
-    console.error('Get state error: ', error.message);
-  }
-};
-
-export default {
-  save,
-  load,
-};
-
-///////////////////////////////////////////////////////////////
-
-
-
 import throttle from 'lodash.throttle';
+
 const refs = {
-  form: document.querySelector('.feedback-form'),
-  emailInput: document.querySelector('input[name="email"]'),
-  messageInput: document.querySelector('textarea[name="message"]'),
-};
+  from: document.querySelector('.feedback-form'),
+  emailEL: document.querySelector('.feedback-form input'),
+  textArea: document.querySelector('.feedback-form textarea'),
+  
+}
 
-const STORAGE_KEY = 'feedback-form-state';
-const formState = {};
-const onFormChange = throttle(() => {
-  (formState.email = refs.emailInput.value.trim()),
-    (formState.message = refs.messageInput.value.trim()),
-    //   console.log(formState);
 
-    save(STORAGE_KEY, formState);
-}, 500);
 
-refs.form.addEventListener('input', onFormChange);
 
-document.addEventListener('DOMContentLoaded', updateFormFields);
+const FEED_BACK_FORM = 'feedback-form-state';
 
-function updateFormFields(event) {
-  const savedState = load(STORAGE_KEY);
-  if (savedState) {
-    refs.emailInput.value = savedState.email;
-    refs.messageInput.value = savedState.message;
-    formState.email = savedState.email; 
-    formState.message = savedState.message; 
+const formData = {};
+
+document.addEventListener('DOMContentLoaded', checkedLocalStorage);
+refs.from.addEventListener('submit', onFormSubmit);
+
+
+
+
+refs.from.addEventListener('input', throttle(function (event) {
+  formData[event.target.name] = event.target.value;
+  const messageJSON = JSON.stringify(formData);
+  localStorage.setItem(FEED_BACK_FORM, messageJSON);
+}, 2000)); 
+
+
+function checkedLocalStorage(){
+  const checkLocal = localStorage.getItem(FEED_BACK_FORM);
+  
+  if(checkLocal){
+    const parsedData = JSON.parse(checkLocal);
+   
+    const {email, message} = parsedData;
+    
+    refs.emailEL.value = email;
+    refs.textArea.value = message;
+    formData.email = email;
+    formData.message = message;
+  return {email, message}
+    
   }
 }
 
-refs.form.addEventListener('submit', onSubmitForm);
 
-function onSubmitForm(event) {
-  event.preventDefault();
-  load(STORAGE_KEY);
-  localStorage.removeItem(STORAGE_KEY);
-  refs.emailInput.value = '';
-  refs.messageInput.value = '';
 
-  console.log(formState);
+
+
+function onFormSubmit(evt){
+  evt.preventDefault();
+  console.log(formData);
+  localStorage.removeItem(FEED_BACK_FORM)
+  refs.from.reset();
 }
+
+  
+  
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
